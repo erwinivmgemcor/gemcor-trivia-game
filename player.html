@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join Trivia</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #1a1a1a; color: white; text-align: center; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
+        h1 { color: #ff0055; }
+        input { padding: 15px; font-size: 1.2rem; border-radius: 10px; border: none; margin-bottom: 20px; width: 80%; max-width: 300px; text-align: center;}
+        .btn { padding: 15px 30px; font-size: 1.5rem; cursor: pointer; background-color: #ff0055; color: white; border: none; border-radius: 10px; width: 80%; max-width: 300px;}
+        .btn:disabled { background-color: #555; }
+        .choice-grid { display: grid; grid-template-columns: 1fr; gap: 15px; width: 100%; max-width: 400px; margin-top: 20px;}
+        .choice-btn { padding: 20px; font-size: 1.2rem; border-radius: 10px; border: none; background-color: #007bff; color: white; font-weight: bold; cursor: pointer;}
+        .choice-btn.red { background-color: #dc3545; }
+        .choice-btn.blue { background-color: #007bff; }
+        .choice-btn.yellow { background-color: #ffc107; color: black;}
+        .choice-btn.green { background-color: #28a745; }
+        #message { font-size: 1.5rem; margin-top: 20px; font-weight: bold;}
+    </style>
+</head>
+<body>
+    <div id="join-screen">
+        <h1>Join the Game!</h1>
+        <input type="text" id="name-input" placeholder="Enter your name">
+        <button class="btn" onclick="joinGame()">Enter</button>
+    </div>
+
+    <div id="waiting-screen" style="display: none;">
+        <h2>You're in!</h2>
+        <p>Wait for the host to start...</p>
+    </div>
+
+    <div id="game-screen" style="display: none;">
+        <h2 id="question-text" style="font-size: 1.2rem;">Question here</h2>
+        <div class="choice-grid" id="choices">
+            <!-- Buttons will be injected here -->
+        </div>
+        <p id="message"></p>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let myScore = 0;
+
+        function joinGame() {
+            const name = document.getElementById('name-input').value;
+            if (name.trim() === '') return alert('Please enter a name');
+            
+            socket.emit('joinGame', name);
+            document.getElementById('join-screen').style.display = 'none';
+            document.getElementById('waiting-screen').style.display = 'block';
+        }
+
+        socket.on('newQuestion', (data) => {
+            document.getElementById('waiting-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+            document.getElementById('message').innerText = '';
+            
+            const choicesDiv = document.getElementById('choices');
+            choicesDiv.innerHTML = '';
+            
+            // Mag-generate ng 4 na malalaking buttons
+            const colors = ['red', 'blue', 'yellow', 'green'];
+            data.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = `choice-btn ${colors[index]}`;
+                btn.innerText = opt;
+                btn.onclick = () => submitAnswer(index, btn);
+                choicesDiv.appendChild(btn);
+            });
+        });
+
+        function submitAnswer(index, btn) {
+            // I-disable lahat ng buttons pagkapindot para hindi makapindot ulit
+            const allBtns = document.querySelectorAll('.choice-btn');
+            allBtns.forEach(b => b.disabled = true);
+            
+            socket.emit('submitAnswer', index);
+            btn.style.opacity = '0.5'; // Visual feedback
+        }
+
+        socket.on('answerResult', (data) => {
+            const msg = document.getElementById('message');
+            if (data.correct) {
+                msg.innerText = "Correct! +100 points";
+                msg.style.color = "#28a745";
+            } else {
+                msg.innerText = "Wrong!";
+                msg.style.color = "#dc3545";
+            }
+        });
+    </script>
+</body>
+</html>
