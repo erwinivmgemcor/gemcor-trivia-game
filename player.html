@@ -3,94 +3,315 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Join Trivia</title>
+    <title>IIEE Cyber Trivia</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #1a1a1a; color: white; text-align: center; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
-        h1 { color: #ff0055; }
-        input { padding: 15px; font-size: 1.2rem; border-radius: 10px; border: none; margin-bottom: 20px; width: 80%; max-width: 300px; text-align: center;}
-        .btn { padding: 15px 30px; font-size: 1.5rem; cursor: pointer; background-color: #ff0055; color: white; border: none; border-radius: 10px; width: 80%; max-width: 300px;}
-        .btn:disabled { background-color: #555; }
-        .choice-grid { display: grid; grid-template-columns: 1fr; gap: 15px; width: 100%; max-width: 400px; margin-top: 20px;}
-        .choice-btn { padding: 20px; font-size: 1.2rem; border-radius: 10px; border: none; background-color: #007bff; color: white; font-weight: bold; cursor: pointer;}
-        .choice-btn.red { background-color: #dc3545; }
-        .choice-btn.blue { background-color: #007bff; }
-        .choice-btn.yellow { background-color: #ffc107; color: black;}
-        .choice-btn.green { background-color: #28a745; }
-        #message { font-size: 1.5rem; margin-top: 20px; font-weight: bold;}
+        /* --- CYBERPUNK / IRON MAN THEME --- */
+        :root {
+            --bg-color: #050505;
+            --honeycomb-color: rgba(0, 255, 255, 0.05);
+            --cyan-glow: #00ffff;
+            --gold-glow: #ffd700;
+            --correct-color: #00ff88;
+            --wrong-color: #ff0044;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden; /* Hide scrollbars for kiosk mode */
+            user-select: none; /* Prevent text highlighting */
+            
+            /* HONEYCOMB BACKGROUND PATTERN */
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(0, 255, 255, 0.1) 0%, transparent 60%),
+                url('data:image/svg+xml;utf8,<svg width="60" height="104" viewBox="0 0 60 104" xmlns="http://www.w3.org/2000/svg"><path d="M30 0L60 17.32V51.96L30 69.28L0 51.96V17.32L30 0Z" fill="none" stroke="rgba(0, 255, 255, 0.15)" stroke-width="2"/><path d="M30 34.64L60 51.96V86.6L30 103.92L0 86.6V51.96L30 34.64Z" fill="none" stroke="rgba(0, 255, 255, 0.15)" stroke-width="2"/></svg>');
+            background-size: cover, 60px 104px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            width: 100vw;
+            box-sizing: border-box;
+        }
+
+        /* Portrait 55-inch TV Optimization (9:16 aspect ratio) */
+        .container {
+            width: 90%;
+            max-width: 800px;
+            height: 90%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border: 2px solid var(--cyan-glow);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.3), inset 0 0 20px rgba(0, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.8);
+            position: relative;
+        }
+
+        h1 {
+            font-size: 4rem;
+            color: var(--cyan-glow);
+            text-shadow: 0 0 20px var(--cyan-glow);
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+
+        .btn {
+            background: transparent;
+            color: var(--gold-glow);
+            border: 3px solid var(--gold-glow);
+            padding: 20px 40px;
+            font-size: 2rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 15px var(--gold-glow);
+            margin-top: 20px;
+        }
+
+        .btn:active {
+            background: var(--gold-glow);
+            color: black;
+            transform: scale(0.95);
+        }
+
+        .hidden { display: none !important; }
+
+        /* QUESTIONS UI */
+        #question-text {
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+            line-height: 1.4;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .option-btn {
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid var(--cyan-glow);
+            color: white;
+            padding: 25px;
+            font-size: 1.8rem;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            display: flex;
+            align-items: center;
+        }
+
+        .option-btn span {
+            background: var(--cyan-glow);
+            color: black;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 20px;
+            font-weight: bold;
+        }
+
+        .option-btn:active {
+            background: var(--cyan-glow);
+            color: black;
+        }
+
+        /* RESULTS UI */
+        #result-screen h1 {
+            font-size: 6rem;
+            margin: 0;
+        }
+
+        .correct-text {
+            color: var(--correct-color);
+            text-shadow: 0 0 40px var(--correct-color);
+        }
+
+        .wrong-text {
+            color: var(--wrong-color);
+            text-shadow: 0 0 40px var(--wrong-color);
+        }
+
+        /* Animations */
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+
+        .shake { animation: shake 0.5s; }
+        
+        /* Glowing pulse for Attract Screen */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 15px var(--gold-glow); }
+            50% { box-shadow: 0 0 40px var(--gold-glow), 0 0 60px var(--gold-glow); }
+            100% { box-shadow: 0 0 15px var(--gold-glow); }
+        }
+        .pulse-btn { animation: pulse 2s infinite; }
+
     </style>
 </head>
 <body>
-    <div id="join-screen">
-        <h1>Join the Game!</h1>
-        <input type="text" id="name-input" placeholder="Enter your name">
-        <button class="btn" onclick="joinGame()">Enter</button>
-    </div>
 
-    <div id="waiting-screen" style="display: none;">
-        <h2>You're in!</h2>
-        <p>Wait for the host to start...</p>
-    </div>
-
-    <div id="game-screen" style="display: none;">
-        <h2 id="question-text" style="font-size: 1.2rem;">Question here</h2>
-        <div class="choice-grid" id="choices">
-            <!-- Buttons will be injected here -->
+    <div class="container" id="main-container">
+        
+        <!-- ATTRACT SCREEN -->
+        <div id="attract-screen">
+            <h1>IIEE CYBER QUIZ</h1>
+            <p style="font-size: 1.5rem; color: #aaa;">Test your electrical knowledge</p>
+            <button class="btn pulse-btn" onclick="startGame()">TAP TO START</button>
         </div>
-        <p id="message"></p>
+
+        <!-- GAME SCREEN -->
+        <div id="game-screen" class="hidden" style="width: 100%;">
+            <h2 style="color: var(--gold-glow); font-size: 2rem;">Question 1 of 3</h2>
+            <div id="question-text">Loading question...</div>
+            <div class="options-grid" id="options-container">
+                <!-- Options injected by JS -->
+            </div>
+        </div>
+
+        <!-- RESULT SCREEN -->
+        <div id="result-screen" class="hidden">
+            <h1 id="result-text">CORRECT!</h1>
+            <p id="result-subtext" style="font-size: 2rem; color: white;">Claim your prize at the booth!</p>
+            <button class="btn" onclick="resetGame()" style="margin-top: 50px;">NEXT PLAYER</button>
+        </div>
+
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
     <script>
-        const socket = io();
-        let myScore = 0;
-
-        function joinGame() {
-            const name = document.getElementById('name-input').value;
-            if (name.trim() === '') return alert('Please enter a name');
-            
-            socket.emit('joinGame', name);
-            document.getElementById('join-screen').style.display = 'none';
-            document.getElementById('waiting-screen').style.display = 'block';
-        }
-
-        socket.on('newQuestion', (data) => {
-            document.getElementById('waiting-screen').style.display = 'none';
-            document.getElementById('game-screen').style.display = 'block';
-            document.getElementById('message').innerText = '';
-            
-            const choicesDiv = document.getElementById('choices');
-            choicesDiv.innerHTML = '';
-            
-            // Mag-generate ng 4 na malalaking buttons
-            const colors = ['red', 'blue', 'yellow', 'green'];
-            data.options.forEach((opt, index) => {
-                const btn = document.createElement('button');
-                btn.className = `choice-btn ${colors[index]}`;
-                btn.innerText = opt;
-                btn.onclick = () => submitAnswer(index, btn);
-                choicesDiv.appendChild(btn);
-            });
-        });
-
-        function submitAnswer(index, btn) {
-            // I-disable lahat ng buttons pagkapindot para hindi makapindot ulit
-            const allBtns = document.querySelectorAll('.choice-btn');
-            allBtns.forEach(b => b.disabled = true);
-            
-            socket.emit('submitAnswer', index);
-            btn.style.opacity = '0.5'; // Visual feedback
-        }
-
-        socket.on('answerResult', (data) => {
-            const msg = document.getElementById('message');
-            if (data.correct) {
-                msg.innerText = "Correct! +100 points";
-                msg.style.color = "#28a745";
-            } else {
-                msg.innerText = "Wrong!";
-                msg.style.color = "#dc3545";
+        // --- GAME DATA ---
+        // Palitan mo ito ng totoong 100 questions niyo later
+        const questions = [
+            {
+                question: "What does IIEE stand for?",
+                options: [
+                    "Institute of Integrated Electrical Engineers",
+                    "International Institute of Electrical Engineering",
+                    "Integrated Institute of Electronic Engineers",
+                    "Institute of Industrial Electrical Engineers"
+                ],
+                answer: 0 // Index ng tamang sagot (0 = unang option)
+            },
+            {
+                question: "Which of the following is a unit of electrical resistance?",
+                options: ["Volt", "Ampere", "Ohm", "Watt"],
+                answer: 2
+            },
+            {
+                question: "What is the color of the live wire in standard electrical wiring?",
+                options: ["Black", "Green", "White", "Red or Brown"],
+                answer: 3
             }
-        });
+        ];
+
+        let currentQuestionIndex = 0;
+
+        // --- DOM ELEMENTS ---
+        const attractScreen = document.getElementById('attract-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const resultText = document.getElementById('result-text');
+        const resultSubtext = document.getElementById('result-subtext');
+        const mainContainer = document.getElementById('main-container');
+
+        // --- FUNCTIONS ---
+
+        function startGame() {
+            attractScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            currentQuestionIndex = 0;
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            // Reset result screen
+            resultScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            mainContainer.classList.remove('shake');
+
+            if (currentQuestionIndex >= questions.length) {
+                // Kung tapos na lahat ng questions (pwedeng mag-loop o mag-end)
+                currentQuestionIndex = 0; 
+            }
+
+            const currentQ = questions[currentQuestionIndex];
+            
+            // Update UI
+            document.querySelector('#game-screen h2').innerText = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+            questionText.innerText = currentQ.question;
+            
+            // Clear and generate options
+            optionsContainer.innerHTML = '';
+            const letters = ['A', 'B', 'C', 'D'];
+            
+            currentQ.options.forEach((option, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerHTML = `<span>${letters[index]}</span> ${option}`;
+                btn.onclick = () => checkAnswer(index);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedIndex) {
+            const currentQ = questions[currentQuestionIndex];
+            gameScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+
+            if (selectedIndex === currentQ.answer) {
+                // TAMA
+                resultText.innerText = "CORRECT!";
+                resultText.className = "correct-text";
+                resultSubtext.innerText = "Great job! Please claim your souvenir at the booth.";
+                // Dito mo pwedeng ilagay yung tunog ng tamang sagot (Audio)
+            } else {
+                // MALI
+                resultText.innerText = "WRONG!";
+                resultText.className = "wrong-text";
+                resultSubtext.innerText = "Better luck next time!";
+                mainContainer.classList.add('shake'); // Shake effect
+                // Dito mo mo pwedeng ilagay yung tunog ng maling sagot (Audio)
+            }
+        }
+
+        function resetGame() {
+            // Balik sa attract screen para sa susunod na player
+            resultScreen.classList.add('hidden');
+            gameScreen.classList.add('hidden');
+            attractScreen.classList.remove('hidden');
+            mainContainer.classList.remove('shake');
+        }
     </script>
 </body>
 </html>
